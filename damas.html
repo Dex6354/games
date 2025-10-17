@@ -11,9 +11,9 @@
             --secondary-color: #444;
             --text-color: #f0f0f0;
             --accent-color: #007bff;
-            --accent-hover: #0056b3;
             --light-square: #f0d9b5;
             --dark-square: #b58863;
+            --selected-color: #6a994e;
             --border-radius: 8px;
         }
         body {
@@ -40,6 +40,7 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
+            flex-wrap: wrap;
         }
         .header h1 { margin: 0; font-size: 1.5em; }
         .header nav a {
@@ -48,32 +49,26 @@
             margin: 0 10px;
             padding: 8px 12px;
             border-radius: var(--border-radius);
-            transition: background-color 0.3s;
         }
-        .header nav a.active, .header nav a:hover {
-            background-color: var(--accent-color);
-        }
+        .header nav a.active { background-color: var(--accent-color); }
         .container {
             background-color: var(--primary-color);
             padding: 20px;
             border-radius: var(--border-radius);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             max-width: 600px;
             width: 95%;
         }
-        .room-info {
+        .info-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .scoreboard, .status {
             background-color: var(--secondary-color);
             padding: 10px;
             border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            word-wrap: break-word;
-        }
-        .room-info p { margin: 5px 0; }
-        .room-info code {
-            background-color: var(--bg-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #ffc107;
         }
         .board {
             display: grid;
@@ -85,8 +80,6 @@
             border: 5px solid var(--dark-square);
         }
         .square {
-            width: 100%;
-            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -99,105 +92,211 @@
             border-radius: 50%;
             cursor: pointer;
             transition: transform 0.2s;
+            box-sizing: border-box;
         }
         .piece:hover { transform: scale(1.1); }
-        .piece.white { background-color: #f8f8f8; border: 2px solid #ccc; }
-        .piece.black { background-color: #333; border: 2px solid #555; }
-        .square.selected { background-color: #6a994e; }
-        
-        .controls { margin-top: 20px; }
-        .back-btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1em;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.3s;
+        .piece.white { background-color: #f8f8f8; border: 2px solid #555; }
+        .piece.black { background-color: #333; border: 2px solid #ccc; }
+        .piece.king::after {
+            content: '👑';
+            font-size: 0.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: gold;
         }
-        .back-btn:hover { background-color: var(--accent-hover); }
+        .square.selected { background-color: var(--selected-color) !important; }
+        .square.valid-move {
+            background-color: #8bb375;
+            cursor: pointer;
+        }
+        
+        .controls { 
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        .btn {
+            color: white; border: none; padding: 10px 20px; font-size: 1em;
+            border-radius: var(--border-radius); cursor: pointer; text-decoration: none;
+        }
+        .restart-btn { background-color: #28a745; }
+        .back-btn { background-color: var(--accent-color); }
     </style>
 </head>
 <body>
 
     <header class="header">
         <h1>Jogos Online</h1>
-        <nav>
-            <a href="index.html">Início</a>
-            <a href="#" onclick="alert('Funcionalidade não implementada')">Jogo da Velha</a>
-            <a href="#" class="active">Damas</a>
-            <a href="#" onclick="alert('Funcionalidade não implementada')">Xadrez</a>
-        </nav>
+        <nav><a href="index.html">Início</a><a href="#" class="active">Damas</a></nav>
     </header>
 
     <div class="container">
         <h2>Damas</h2>
-        <div class="room-info" id="room-info"></div>
+        <div class="info-container">
+            <div class="status" id="status">Vez das Brancas</div>
+            <div class="scoreboard" id="scoreboard">Brancas: 12 | Pretas: 12</div>
+        </div>
         <div class="board" id="board"></div>
         <div class="controls">
-            <a href="index.html" class="back-btn">Voltar à Página Inicial</a>
+            <button id="restart-btn" class="btn restart-btn">Reiniciar</button>
+            <a href="index.html" class="btn back-btn">Voltar</a>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const sala = urlParams.get('sala');
-            const nome = urlParams.get('nome');
+            const board = document.getElementById('board');
+            const statusDiv = document.getElementById('status');
+            const scoreboardDiv = document.getElementById('scoreboard');
+            const restartBtn = document.getElementById('restart-btn');
 
-            const roomInfoDiv = document.getElementById('room-info');
-            if (sala && nome) {
-                roomInfoDiv.innerHTML = `
-                    <p>Bem-vindo, <strong>${nome}</strong>!</p>
-                    <p>ID da Sala: <code>${sala}</code></p>
-                    <p>Compartilhe o link para seu amigo entrar na sala.</p>
-                `;
-            } else {
-                roomInfoDiv.innerHTML = '<p>Erro: Informações da sala não encontradas.</p>';
+            let turn = 'white';
+            let selectedPiece = null;
+            let pieces = { white: 12, black: 12 };
+
+            function createBoard() {
+                board.innerHTML = '';
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const square = document.createElement('div');
+                        square.classList.add('square', (row + col) % 2 === 0 ? 'light' : 'dark');
+                        square.dataset.row = row;
+                        square.dataset.col = col;
+
+                        if ((row + col) % 2 !== 0) {
+                            if (row < 3) {
+                                square.innerHTML = '<div class="piece black" data-color="black"></div>';
+                            } else if (row > 4) {
+                                square.innerHTML = '<div class="piece white" data-color="white"></div>';
+                            }
+                        }
+                        board.appendChild(square);
+                    }
+                }
+                updateStatus();
+                updateScoreboard();
             }
 
-            const board = document.getElementById('board');
-            let selectedPiece = null;
+            function updateStatus() {
+                statusDiv.textContent = `Vez das ${turn === 'white' ? 'Brancas' : 'Pretas'}`;
+            }
 
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 8; col++) {
-                    const square = document.createElement('div');
-                    square.classList.add('square');
-                    square.classList.add((row + col) % 2 === 0 ? 'light' : 'dark');
-                    square.dataset.row = row;
-                    square.dataset.col = col;
-
-                    if ((row + col) % 2 !== 0) {
-                        if (row < 3) {
-                            square.innerHTML = '<div class="piece black"></div>';
-                        } else if (row > 4) {
-                            square.innerHTML = '<div class="piece white"></div>';
-                        }
-                    }
-                    board.appendChild(square);
-                }
+            function updateScoreboard() {
+                scoreboardDiv.textContent = `Brancas: ${pieces.white} | Pretas: ${pieces.black}`;
+                if (pieces.white === 0) statusDiv.textContent = "Pretas Venceram!";
+                if (pieces.black === 0) statusDiv.textContent = "Brancas Venceram!";
             }
 
             board.addEventListener('click', (e) => {
-                const target = e.target;
-                const square = target.closest('.square');
-                
+                const square = e.target.closest('.square');
+                if (!square) return;
+
                 if (selectedPiece) {
-                    // Mover peça para um quadrado vazio
-                    if (square && !square.hasChildNodes()) {
-                       square.appendChild(selectedPiece);
+                    // Tenta mover para o quadrado clicado
+                    if (square.classList.contains('valid-move')) {
+                        movePiece(selectedPiece.parentElement, square);
                     }
-                    // Desselecionar
+                    // Limpa a seleção
+                    clearHighlights();
                     selectedPiece.parentElement.classList.remove('selected');
                     selectedPiece = null;
-                } else if (target.classList.contains('piece')) {
-                    // Selecionar peça
-                    selectedPiece = target;
-                    target.parentElement.classList.add('selected');
+                } else if (e.target.classList.contains('piece')) {
+                    const piece = e.target;
+                    if (piece.dataset.color === turn) {
+                        selectedPiece = piece;
+                        piece.parentElement.classList.add('selected');
+                        highlightValidMoves(piece.parentElement);
+                    }
                 }
             });
+            
+            function clearHighlights() {
+                document.querySelectorAll('.valid-move').forEach(s => s.classList.remove('valid-move'));
+                document.querySelectorAll('.selected').forEach(s => s.classList.remove('selected'));
+            }
+
+            function highlightValidMoves(startSquare) {
+                const r = parseInt(startSquare.dataset.row);
+                const c = parseInt(startSquare.dataset.col);
+                const piece = startSquare.querySelector('.piece');
+                const color = piece.dataset.color;
+                const isKing = piece.classList.contains('king');
+                const directions = [];
+                
+                if (color === 'white' || isKing) {
+                    directions.push({ r: -1, c: -1 }, { r: -1, c: 1 }); // Noroeste e Nordeste
+                }
+                if (color === 'black' || isKing) {
+                    directions.push({ r: 1, c: -1 }, { r: 1, c: 1 }); // Sudoeste e Sudeste
+                }
+                
+                directions.forEach(dir => {
+                    // Movimento simples
+                    let newR = r + dir.r, newC = c + dir.c;
+                    let targetSquare = getSquare(newR, newC);
+                    if (targetSquare && !targetSquare.hasChildNodes()) {
+                        targetSquare.classList.add('valid-move');
+                    }
+                    
+                    // Movimento de captura
+                    let jumpR = r + 2 * dir.r, jumpC = c + 2 * dir.c;
+                    let jumpSquare = getSquare(jumpR, jumpC);
+                    let opponentPieceSquare = getSquare(newR, newC);
+                    
+                    if(jumpSquare && !jumpSquare.hasChildNodes() && opponentPieceSquare && opponentPieceSquare.hasChildNodes()){
+                        if(opponentPieceSquare.querySelector('.piece').dataset.color !== color){
+                           jumpSquare.classList.add('valid-move');
+                        }
+                    }
+                });
+            }
+
+            function movePiece(fromSquare, toSquare) {
+                const piece = fromSquare.querySelector('.piece');
+                const fromR = parseInt(fromSquare.dataset.row);
+                const toR = parseInt(toSquare.dataset.row);
+                
+                // Verifica se houve captura
+                if (Math.abs(fromR - toR) === 2) {
+                    const capturedR = (fromR + toR) / 2;
+                    const capturedC = (parseInt(fromSquare.dataset.col) + parseInt(toSquare.dataset.col)) / 2;
+                    const capturedSquare = getSquare(capturedR, capturedC);
+                    const capturedPiece = capturedSquare.querySelector('.piece');
+                    if(capturedPiece){
+                        pieces[capturedPiece.dataset.color]--;
+                        capturedSquare.innerHTML = '';
+                    }
+                }
+
+                toSquare.appendChild(piece);
+                fromSquare.innerHTML = '';
+
+                // Promover a Dama (Rei)
+                if ((piece.dataset.color === 'white' && toR === 0) || (piece.dataset.color === 'black' && toR === 7)) {
+                    piece.classList.add('king');
+                }
+
+                turn = turn === 'white' ? 'black' : 'white';
+                updateStatus();
+                updateScoreboard();
+            }
+
+            function getSquare(row, col) {
+                if (row < 0 || row > 7 || col < 0 || col > 7) return null;
+                return document.querySelector(`.square[data-row='${row}'][data-col='${col}']`);
+            }
+            
+            restartBtn.addEventListener('click', () => {
+                turn = 'white';
+                selectedPiece = null;
+                pieces = { white: 12, black: 12 };
+                createBoard();
+            });
+
+            createBoard();
         });
     </script>
 </body>
