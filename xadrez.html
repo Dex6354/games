@@ -11,9 +11,9 @@
             --secondary-color: #444;
             --text-color: #f0f0f0;
             --accent-color: #007bff;
-            --accent-hover: #0056b3;
             --light-square: #EADABC;
             --dark-square: #A98A65;
+            --selected-color: #6a994e;
             --border-radius: 8px;
         }
         body {
@@ -29,138 +29,91 @@
             text-align: center;
         }
         .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: var(--primary-color);
-            padding: 15px 0;
-            border-bottom: 2px solid var(--secondary-color);
-            z-index: 1000;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
+            position: fixed; top: 0; left: 0; width: 100%; background-color: var(--primary-color);
+            padding: 15px 0; border-bottom: 2px solid var(--secondary-color); z-index: 1000;
+            display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap;
         }
         .header h1 { margin: 0; font-size: 1.5em; }
         .header nav a {
-            color: var(--text-color);
-            text-decoration: none;
-            margin: 0 10px;
-            padding: 8px 12px;
-            border-radius: var(--border-radius);
-            transition: background-color 0.3s;
+            color: var(--text-color); text-decoration: none; margin: 0 10px;
+            padding: 8px 12px; border-radius: var(--border-radius);
         }
-        .header nav a.active, .header nav a:hover {
-            background-color: var(--accent-color);
-        }
+        .header nav a.active { background-color: var(--accent-color); }
         .container {
-            background-color: var(--primary-color);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            max-width: 600px;
-            width: 95%;
+            background-color: var(--primary-color); padding: 20px;
+            border-radius: var(--border-radius); max-width: 600px; width: 95%;
         }
-        .room-info {
-            background-color: var(--secondary-color);
-            padding: 10px;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            word-wrap: break-word;
+        .info-container {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; flex-wrap: wrap;
         }
-        .room-info p { margin: 5px 0; }
-        .room-info code {
-            background-color: var(--bg-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #ffc107;
+        .captured-pieces, .status {
+            background-color: var(--secondary-color); padding: 10px;
+            border-radius: var(--border-radius); min-height: 24px;
         }
         .board {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            width: 100%;
-            max-width: 500px;
-            aspect-ratio: 1 / 1;
-            margin: 20px auto;
-            border: 5px solid var(--dark-square);
+            display: grid; grid-template-columns: repeat(8, 1fr);
+            width: 100%; max-width: 500px; aspect-ratio: 1 / 1;
+            margin: 20px auto; border: 5px solid var(--dark-square);
         }
         .square {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: clamp(20px, 6vw, 45px);
-            cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            font-size: clamp(20px, 6vw, 45px); user-select: none;
         }
         .square.light { background-color: var(--light-square); }
         .square.dark { background-color: var(--dark-square); }
-        .piece {
-             -webkit-user-select: none; /* Safari */
-             -ms-user-select: none; /* IE 10 and IE 11 */
-             user-select: none; /* Standard syntax */
-        }
-        .square.selected {
-            background-color: #6a994e;
+        .piece { cursor: pointer; }
+        .square.selected { background-color: var(--selected-color) !important; }
+        .square.valid-move {
+            background: radial-gradient(circle, rgba(139,179,117,0.7) 20%, transparent 25%);
+            cursor: pointer;
         }
         
-        .controls { margin-top: 20px; }
-        .back-btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1em;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.3s;
+        .controls { 
+            margin-top: 20px; display: flex;
+            justify-content: space-around; gap: 10px;
         }
-        .back-btn:hover { background-color: var(--accent-hover); }
+        .btn {
+            color: white; border: none; padding: 10px 20px; font-size: 1em;
+            border-radius: var(--border-radius); cursor: pointer; text-decoration: none;
+        }
+        .restart-btn { background-color: #28a745; }
+        .back-btn { background-color: var(--accent-color); }
     </style>
 </head>
 <body>
 
     <header class="header">
         <h1>Jogos Online</h1>
-        <nav>
-            <a href="index.html">Início</a>
-            <a href="#" onclick="alert('Funcionalidade não implementada')">Jogo da Velha</a>
-            <a href="#" onclick="alert('Funcionalidade não implementada')">Damas</a>
-            <a href="#" class="active">Xadrez</a>
-        </nav>
+        <nav><a href="index.html">Início</a><a href="#" class="active">Xadrez</a></nav>
     </header>
 
     <div class="container">
         <h2>Xadrez</h2>
-        <div class="room-info" id="room-info"></div>
+        <div class="info-container">
+            <div class="status" id="status">Vez das Brancas</div>
+            <div class="captured-pieces" id="captured-white">Capturadas (Brancas):</div>
+            <div class="captured-pieces" id="captured-black">Capturadas (Pretas):</div>
+        </div>
         <div class="board" id="board"></div>
         <div class="controls">
-            <a href="index.html" class="back-btn">Voltar à Página Inicial</a>
+            <button id="restart-btn" class="btn restart-btn">Reiniciar</button>
+            <a href="index.html" class="btn back-btn">Voltar</a>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const sala = urlParams.get('sala');
-            const nome = urlParams.get('nome');
-
-            const roomInfoDiv = document.getElementById('room-info');
-            if (sala && nome) {
-                roomInfoDiv.innerHTML = `
-                    <p>Bem-vindo, <strong>${nome}</strong>!</p>
-                    <p>ID da Sala: <code>${sala}</code></p>
-                    <p>Copie e compartilhe o link desta página para jogar.</p>
-                `;
-            } else {
-                roomInfoDiv.innerHTML = '<p>Erro: Informações da sala não encontradas.</p>';
-            }
-
             const board = document.getElementById('board');
+            const statusDiv = document.getElementById('status');
+            const restartBtn = document.getElementById('restart-btn');
+            const capturedWhiteDiv = document.getElementById('captured-white');
+            const capturedBlackDiv = document.getElementById('captured-black');
+
+            let turn = 'w';
             let selectedSquare = null;
+            let capturedPieces = { w: [], b: [] };
             
-            // Unicode das peças de xadrez
             const pieces = {
                 'wR': '♖', 'wN': '♘', 'wB': '♗', 'wQ': '♕', 'wK': '♔', 'wP': '♙',
                 'bR': '♜', 'bN': '♞', 'bB': '♝', 'bQ': '♛', 'bK': '♚', 'bP': '♟'
@@ -169,10 +122,10 @@
             const initialBoard = [
                 ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
                 ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
-                [ '',   '',   '',   '',   '',   '',   '',   ''],
-                [ '',   '',   '',   '',   '',   '',   '',   ''],
-                [ '',   '',   '',   '',   '',   '',   '',   ''],
-                [ '',   '',   '',   '',   '',   '',   '',   ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', ''],
                 ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
                 ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
             ];
@@ -182,46 +135,141 @@
                 for (let row = 0; row < 8; row++) {
                     for (let col = 0; col < 8; col++) {
                         const square = document.createElement('div');
-                        square.classList.add('square');
-                        square.classList.add((row + col) % 2 === 0 ? 'light' : 'dark');
+                        square.classList.add('square', (row + col) % 2 === 0 ? 'light' : 'dark');
                         square.dataset.row = row;
                         square.dataset.col = col;
                         
                         const pieceCode = initialBoard[row][col];
-                        if(pieceCode) {
+                        if (pieceCode) {
                             const piece = document.createElement('span');
                             piece.classList.add('piece');
                             piece.textContent = pieces[pieceCode];
                             piece.dataset.piece = pieceCode;
                             square.appendChild(piece);
                         }
-                        
                         board.appendChild(square);
                     }
                 }
+                updateStatus();
+                updateCapturedDisplay();
             }
-            
-            createBoard();
 
             board.addEventListener('click', (e) => {
                 const square = e.target.closest('.square');
                 if (!square) return;
 
                 if (selectedSquare) {
-                    // Mover peça
-                    if (square !== selectedSquare && selectedSquare.hasChildNodes()) {
-                        square.innerHTML = selectedSquare.innerHTML;
-                        selectedSquare.innerHTML = '';
+                    if (square.classList.contains('valid-move')) {
+                        movePiece(selectedSquare, square);
                     }
-                    // Desselecionar
-                    selectedSquare.classList.remove('selected');
+                    clearHighlights();
                     selectedSquare = null;
                 } else if (square.hasChildNodes()) {
-                    // Selecionar peça
-                    selectedSquare = square;
-                    selectedSquare.classList.add('selected');
+                    const piece = square.querySelector('.piece');
+                    if (piece.dataset.piece.startsWith(turn)) {
+                        selectedSquare = square;
+                        square.classList.add('selected');
+                        highlightValidMoves(square);
+                    }
                 }
             });
+            
+            function movePiece(from, to) {
+                if (to.hasChildNodes()) { // Captura
+                    const capturedPiece = to.querySelector('.piece').dataset.piece;
+                    capturedPieces[capturedPiece.startsWith('w') ? 'w' : 'b'].push(pieces[capturedPiece]);
+                    updateCapturedDisplay();
+                }
+                to.innerHTML = from.innerHTML;
+                from.innerHTML = '';
+                turn = turn === 'w' ? 'b' : 'w';
+                updateStatus();
+            }
+            
+            function updateStatus() {
+                statusDiv.textContent = `Vez das ${turn === 'w' ? 'Brancas' : 'Pretas'}`;
+            }
+
+            function updateCapturedDisplay() {
+                 capturedWhiteDiv.textContent = 'Capturadas (Brancas): ' + capturedPieces.w.join(' ');
+                 capturedBlackDiv.textContent = 'Capturadas (Pretas): ' + capturedPieces.b.join(' ');
+            }
+
+            function clearHighlights() {
+                document.querySelectorAll('.selected, .valid-move').forEach(s => s.classList.remove('selected', 'valid-move'));
+            }
+
+            // --- Lógica de Movimento (Simplificada) ---
+            function highlightValidMoves(square) {
+                // Implementação básica de movimentos, sem verificar xeque.
+                const piece = square.querySelector('.piece').dataset.piece;
+                const r = parseInt(square.dataset.row);
+                const c = parseInt(square.dataset.col);
+                
+                // Lógica de movimento para cada peça será complexa.
+                // Esta é uma versão simplificada para ilustrar.
+                // Em um projeto real, isso seria muito mais robusto.
+                
+                // Exemplo para a Torre (Rook):
+                if (piece.endsWith('R')) {
+                    // Cima, baixo, esquerda, direita
+                    for(let i = r + 1; i < 8; i++) if(addMove(i, c)) break;
+                    for(let i = r - 1; i >= 0; i--) if(addMove(i, c)) break;
+                    for(let i = c + 1; i < 8; i++) if(addMove(r, i)) break;
+                    for(let i = c - 1; i >= 0; i--) if(addMove(r, i)) break;
+                }
+                 // Exemplo para Peão (Pawn)
+                if (piece.endsWith('P')) {
+                    const dir = piece.startsWith('w') ? -1 : 1;
+                    const startRow = piece.startsWith('w') ? 6 : 1;
+                    // Movimento para frente
+                    if (!getSquare(r + dir, c).hasChildNodes()) {
+                        addMove(r + dir, c);
+                        if (r === startRow && !getSquare(r + 2 * dir, c).hasChildNodes()) {
+                            addMove(r + 2 * dir, c);
+                        }
+                    }
+                    // Captura
+                    addMove(r + dir, c - 1, true);
+                    addMove(r + dir, c + 1, true);
+                }
+                // Adicione lógica para outras peças (Cavalo, Bispo, Rainha, Rei) aqui...
+            }
+            
+            function addMove(r, c, mustCapture = false){
+                const target = getSquare(r, c);
+                if (!target) return true; // Fora do tabuleiro
+                
+                if (mustCapture) {
+                    if (target.hasChildNodes() && !target.querySelector('.piece').dataset.piece.startsWith(turn)) {
+                        target.classList.add('valid-move');
+                    }
+                    return false;
+                }
+                
+                if (!target.hasChildNodes()) {
+                    target.classList.add('valid-move');
+                    return false; // Continua na direção
+                } else if (!target.querySelector('.piece').dataset.piece.startsWith(turn)) {
+                    target.classList.add('valid-move');
+                    return true; // Para, pois capturou
+                }
+                return true; // Para, pois é peça amiga
+            }
+
+            function getSquare(row, col) {
+                if (row < 0 || row > 7 || col < 0 || col > 7) return null;
+                return document.querySelector(`.square[data-row='${row}'][data-col='${col}']`);
+            }
+            
+            restartBtn.addEventListener('click', () => {
+                turn = 'w';
+                selectedSquare = null;
+                capturedPieces = { w: [], b: [] };
+                createBoard();
+            });
+
+            createBoard();
         });
     </script>
 </body>
