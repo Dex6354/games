@@ -17,110 +17,52 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding-top: 80px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: calc(100vh - 80px);
-            text-align: center;
+            background-color: var(--bg-color); color: var(--text-color); margin: 0;
+            padding-top: 80px; display: flex; justify-content: center; align-items: center;
+            min-height: calc(100vh - 80px); text-align: center;
         }
         .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: var(--primary-color);
-            padding: 15px 0;
-            border-bottom: 2px solid var(--secondary-color);
-            z-index: 1000;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            flex-wrap: wrap;
+            position: fixed; top: 0; left: 0; width: 100%; background-color: var(--primary-color);
+            padding: 15px 0; border-bottom: 2px solid var(--secondary-color); z-index: 1000;
+            display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap;
         }
         .header h1 { margin: 0; font-size: 1.5em; }
         .header nav a {
-            color: var(--text-color);
-            text-decoration: none;
-            margin: 0 10px;
-            padding: 8px 12px;
-            border-radius: var(--border-radius);
-            transition: background-color 0.3s;
+            color: var(--text-color); text-decoration: none; margin: 0 10px;
+            padding: 8px 12px; border-radius: var(--border-radius);
         }
-        .header nav a.active, .header nav a:hover {
-            background-color: var(--accent-color);
-        }
+        .header nav a.active { background-color: var(--accent-color); }
         .container {
-            background-color: var(--primary-color);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            max-width: 500px;
-            width: 90%;
+            background-color: var(--primary-color); padding: 20px; border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); max-width: 500px; width: 90%;
         }
         .room-info {
-            background-color: var(--secondary-color);
-            padding: 10px;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-            word-wrap: break-word;
+            background-color: var(--secondary-color); padding: 10px;
+            border-radius: var(--border-radius); margin-bottom: 15px; word-wrap: break-word;
         }
         .scoreboard {
-            display: flex;
-            justify-content: space-around;
-            font-size: 1.2em;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: var(--bg-color);
-            border-radius: var(--border-radius);
+            display: flex; justify-content: space-around; font-size: 1.2em; margin-bottom: 15px;
+            padding: 10px; background-color: var(--bg-color); border-radius: var(--border-radius);
         }
-        .status {
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            height: 20px;
-        }
+        .status { font-size: 1.1em; margin-bottom: 15px; height: 20px; transition: color 0.3s; }
         .board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            width: 300px;
-            height: 300px;
-            margin: 0 auto;
-            max-width: 80vw;
-            max-height: 80vw;
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+            width: 300px; height: 300px; margin: 0 auto;
+            max-width: 80vw; max-height: 80vw;
         }
         .cell {
-            background-color: var(--secondary-color);
-            border-radius: var(--border-radius);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 3em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            background-color: var(--secondary-color); border-radius: var(--border-radius);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 3em; font-weight: bold; cursor: pointer; transition: background-color 0.3s;
         }
         .cell:hover { background-color: #555; }
         .cell.x { color: var(--x-color); }
         .cell.o { color: var(--o-color); }
         
-        .controls { 
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-around;
-            gap: 10px;
-        }
+        .controls { margin-top: 20px; display: flex; justify-content: space-around; gap: 10px; }
         .btn {
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1em;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            text-decoration: none;
+            color: white; border: none; padding: 10px 20px; font-size: 1em;
+            border-radius: var(--border-radius); cursor: pointer; text-decoration: none;
             transition: background-color 0.3s;
         }
         .restart-btn { background-color: #28a745; }
@@ -133,51 +75,42 @@
 
     <header class="header">
         <h1>Jogos Online</h1>
-        <nav>
-            <a href="index.html">Início</a>
-            <a href="#" class="active">Jogo da Velha</a>
-        </nav>
+        <nav><a href="index.html">Início</a><a href="#" class="active">Jogo da Velha</a></nav>
     </header>
 
     <div class="container">
         <h2>Jogo da Velha</h2>
         <div class="room-info" id="room-info"></div>
         <div class="scoreboard">
-            <div>Jogador X: <span id="score-x">0</span></div>
-            <div>Jogador O: <span id="score-o">0</span></div>
+            <div id="player-x-info">Jogador X: 0</div>
+            <div id="player-o-info">Jogador O: 0</div>
         </div>
-        <div class="status" id="status">Vez do Jogador X</div>
-        
+        <div class="status" id="status"></div>
         <div class="board" id="board"></div>
-        
         <div class="controls">
             <button id="restart-btn" class="btn restart-btn">Nova Partida</button>
-            <a href="index.html" class="btn back-btn">Voltar à Página Inicial</a>
+            <a href="index.html" class="btn back-btn">Voltar</a>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const sala = urlParams.get('sala');
-            const nome = urlParams.get('nome') || 'Jogador 1';
+            const salaId = urlParams.get('sala');
+            const myName = urlParams.get('nome') || 'Anônimo';
+            let mySymbol = ''; // 'X' ou 'O'
 
-            const roomInfoDiv = document.getElementById('room-info');
-            roomInfoDiv.innerHTML = `
-                <p>Bem-vindo, <strong>${nome}</strong>! Sala: <code>${sala}</code></p>
-                <p>Compartilhe a URL para seu amigo jogar.</p>
-            `;
+            if (!salaId) {
+                document.getElementById('status').textContent = "ERRO: Sala não encontrada!";
+                return;
+            }
 
+            const storageKey = `velha-sala-${salaId}`;
             const board = document.getElementById('board');
             const statusDiv = document.getElementById('status');
-            const scoreXSpan = document.getElementById('score-x');
-            const scoreOSpan = document.getElementById('score-o');
             const restartBtn = document.getElementById('restart-btn');
-            
-            let currentPlayer = 'X';
-            let gameActive = true;
-            let boardState = ['', '', '', '', '', '', '', '', ''];
-            let scores = { X: 0, O: 0 };
+            const playerXInfo = document.getElementById('player-x-info');
+            const playerOInfo = document.getElementById('player-o-info');
             
             const winConditions = [
                 [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -185,82 +118,143 @@
                 [0, 4, 8], [2, 4, 6]
             ];
 
-            function createBoard() {
-                for (let i = 0; i < 9; i++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    cell.dataset.index = i;
-                    cell.addEventListener('click', handleCellClick);
-                    board.appendChild(cell);
-                }
+            // Inicializa o tabuleiro
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleCellClick);
+                board.appendChild(cell);
             }
 
-            function handleCellClick(event) {
-                const clickedCell = event.target;
-                const index = clickedCell.dataset.index;
-
-                if (boardState[index] !== '' || !gameActive) {
-                    return;
-                }
-
-                boardState[index] = currentPlayer;
-                clickedCell.textContent = currentPlayer;
-                clickedCell.classList.add(currentPlayer.toLowerCase());
+            function getGameState() {
+                const stateJSON = localStorage.getItem(storageKey);
+                if (stateJSON) return JSON.parse(stateJSON);
                 
-                checkResult();
+                // Se não existe estado, cria um novo
+                return {
+                    board: ['', '', '', '', '', '', '', '', ''],
+                    currentPlayer: 'X',
+                    gameActive: true,
+                    players: { X: null, O: null },
+                    scores: { X: 0, O: 0 }
+                };
             }
 
-            function checkResult() {
-                let roundWon = false;
-                for (let i = 0; i < winConditions.length; i++) {
-                    const condition = winConditions[i];
-                    const a = boardState[condition[0]];
-                    const b = boardState[condition[1]];
-                    const c = boardState[condition[2]];
-                    if (a === '' || b === '' || c === '') continue;
-                    if (a === b && b === c) {
-                        roundWon = true;
-                        break;
-                    }
-                }
-
-                if (roundWon) {
-                    statusDiv.textContent = `Parabéns! Jogador ${currentPlayer} venceu!`;
-                    scores[currentPlayer]++;
-                    updateScoreboard();
-                    gameActive = false;
-                    return;
-                }
-
-                if (!boardState.includes('')) {
-                    statusDiv.textContent = 'Deu velha! Empate!';
-                    gameActive = false;
-                    return;
-                }
-
-                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-                statusDiv.textContent = `Vez do Jogador ${currentPlayer}`;
+            function saveGameState(state) {
+                localStorage.setItem(storageKey, JSON.stringify(state));
             }
             
-            function updateScoreboard() {
-                scoreXSpan.textContent = scores.X;
-                scoreOSpan.textContent = scores.O;
+            function joinGame() {
+                let state = getGameState();
+                if (state.players.X === null || state.players.X === myName) {
+                    mySymbol = 'X';
+                    state.players.X = myName;
+                } else if (state.players.O === null || state.players.O === myName) {
+                    mySymbol = 'O';
+                    state.players.O = myName;
+                } else {
+                    alert("Sala cheia!");
+                    mySymbol = ''; // Modo espectador
+                }
+                document.getElementById('room-info').innerHTML = `<p>Sala: <code>${salaId}</code> | Você é: <strong>${mySymbol || 'Espectador'}</strong> (${myName})</p>`;
+                saveGameState(state);
+                updateUI(state);
+            }
+
+            function updateUI(state) {
+                // Atualiza o tabuleiro
+                const cells = document.querySelectorAll('.cell');
+                for (let i = 0; i < 9; i++) {
+                    cells[i].textContent = state.board[i];
+                    cells[i].classList.remove('x', 'o');
+                    if(state.board[i]) cells[i].classList.add(state.board[i].toLowerCase());
+                }
+
+                // Atualiza placar e nomes
+                playerXInfo.textContent = `${state.players.X || 'Jogador X'}: ${state.scores.X}`;
+                playerOInfo.textContent = `${state.players.O || 'Aguardando...'}: ${state.scores.O}`;
+
+                // Atualiza status
+                if (!state.gameActive) {
+                    const winner = checkWinner(state.board);
+                    if (winner) {
+                        statusDiv.textContent = `Parabéns! ${state.players[winner]} (${winner}) venceu!`;
+                    } else {
+                        statusDiv.textContent = 'Deu velha! Empate!';
+                    }
+                } else {
+                    if (state.currentPlayer === mySymbol) {
+                        statusDiv.textContent = 'É a sua vez!';
+                        statusDiv.style.color = '#28a745';
+                    } else {
+                        statusDiv.textContent = `Aguardando a vez de ${state.players[state.currentPlayer] || state.currentPlayer}...`;
+                        statusDiv.style.color = 'var(--o-color)';
+                    }
+                }
+            }
+            
+            function handleCellClick(event) {
+                let state = getGameState();
+                const index = event.target.dataset.index;
+
+                if (state.currentPlayer !== mySymbol || !state.gameActive || state.board[index] !== '') {
+                    return; // Não é sua vez, jogo acabou ou célula ocupada
+                }
+
+                state.board[index] = mySymbol;
+                const winner = checkWinner(state.board);
+
+                if (winner) {
+                    state.gameActive = false;
+                    state.scores[winner]++;
+                } else if (!state.board.includes('')) {
+                    state.gameActive = false; // Empate
+                } else {
+                    state.currentPlayer = state.currentPlayer === 'X' ? 'O' : 'X';
+                }
+                
+                saveGameState(state);
+                updateUI(state);
+            }
+
+            function checkWinner(board) {
+                for (const condition of winConditions) {
+                    const [a, b, c] = condition;
+                    if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                        return board[a];
+                    }
+                }
+                return null;
             }
 
             function restartGame() {
-                gameActive = true;
-                currentPlayer = 'X';
-                boardState = ['', '', '', '', '', '', '', '', ''];
-                statusDiv.textContent = `Vez do Jogador ${currentPlayer}`;
-                document.querySelectorAll('.cell').forEach(cell => {
-                    cell.textContent = '';
-                    cell.classList.remove('x', 'o');
-                });
+                let state = getGameState();
+                // Apenas o jogador 'X' (host) pode reiniciar o placar, mas ambos podem iniciar nova partida
+                if (mySymbol === 'X') {
+                    // Se for um novo jogo geral, pode zerar
+                    // state.scores = { X: 0, O: 0 }; 
+                }
+                state.board = ['', '', '', '', '', '', '', '', ''];
+                state.currentPlayer = 'X';
+                state.gameActive = true;
+                saveGameState(state);
+                updateUI(state);
             }
 
-            restartBtn.addEventListener('click', restartGame);
+            // Ouve por mudanças no localStorage feitas por outras abas
+            window.addEventListener('storage', (event) => {
+                if (event.key === storageKey) {
+                    updateUI(getGameState());
+                }
+            });
             
-            createBoard();
+            restartBtn.addEventListener('click', () => {
+                 if(mySymbol) restartGame();
+            });
+            
+            // Inicia o jogo
+            joinGame();
         });
     </script>
 </body>
