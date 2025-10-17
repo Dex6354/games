@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xadrez - Jogos Online</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --primary-color: #2c2c2c;
+            --secondary-color: #444;
+            --text-color: #f0f0f0;
+            --accent-color: #007bff;
+            --accent-hover: #0056b3;
+            --light-square: #EADABC;
+            --dark-square: #A98A65;
+            --border-radius: 8px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding-top: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+            text-align: center;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary-color);
+            padding: 15px 0;
+            border-bottom: 2px solid var(--secondary-color);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .header h1 { margin: 0; font-size: 1.5em; }
+        .header nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            transition: background-color 0.3s;
+        }
+        .header nav a.active, .header nav a:hover {
+            background-color: var(--accent-color);
+        }
+        .container {
+            background-color: var(--primary-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 95%;
+        }
+        .room-info {
+            background-color: var(--secondary-color);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            word-wrap: break-word;
+        }
+        .room-info p { margin: 5px 0; }
+        .room-info code {
+            background-color: var(--bg-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ffc107;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1;
+            margin: 20px auto;
+            border: 5px solid var(--dark-square);
+        }
+        .square {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(20px, 6vw, 45px);
+            cursor: pointer;
+        }
+        .square.light { background-color: var(--light-square); }
+        .square.dark { background-color: var(--dark-square); }
+        .piece {
+             -webkit-user-select: none; /* Safari */
+             -ms-user-select: none; /* IE 10 and IE 11 */
+             user-select: none; /* Standard syntax */
+        }
+        .square.selected {
+            background-color: #6a994e;
+        }
+        
+        .controls { margin-top: 20px; }
+        .back-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .back-btn:hover { background-color: var(--accent-hover); }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>Jogos Online</h1>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="#" onclick="alert('Funcionalidade não implementada')">Jogo da Velha</a>
+            <a href="#" onclick="alert('Funcionalidade não implementada')">Damas</a>
+            <a href="#" class="active">Xadrez</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Xadrez</h2>
+        <div class="room-info" id="room-info"></div>
+        <div class="board" id="board"></div>
+        <div class="controls">
+            <a href="index.html" class="back-btn">Voltar à Página Inicial</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sala = urlParams.get('sala');
+            const nome = urlParams.get('nome');
+
+            const roomInfoDiv = document.getElementById('room-info');
+            if (sala && nome) {
+                roomInfoDiv.innerHTML = `
+                    <p>Bem-vindo, <strong>${nome}</strong>!</p>
+                    <p>ID da Sala: <code>${sala}</code></p>
+                    <p>Copie e compartilhe o link desta página para jogar.</p>
+                `;
+            } else {
+                roomInfoDiv.innerHTML = '<p>Erro: Informações da sala não encontradas.</p>';
+            }
+
+            const board = document.getElementById('board');
+            let selectedSquare = null;
+            
+            // Unicode das peças de xadrez
+            const pieces = {
+                'wR': '♖', 'wN': '♘', 'wB': '♗', 'wQ': '♕', 'wK': '♔', 'wP': '♙',
+                'bR': '♜', 'bN': '♞', 'bB': '♝', 'bQ': '♛', 'bK': '♚', 'bP': '♟'
+            };
+
+            const initialBoard = [
+                ['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+                ['bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP', 'bP'],
+                [ '',   '',   '',   '',   '',   '',   '',   ''],
+                [ '',   '',   '',   '',   '',   '',   '',   ''],
+                [ '',   '',   '',   '',   '',   '',   '',   ''],
+                [ '',   '',   '',   '',   '',   '',   '',   ''],
+                ['wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP', 'wP'],
+                ['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
+            ];
+
+            function createBoard() {
+                board.innerHTML = '';
+                for (let row = 0; row < 8; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        const square = document.createElement('div');
+                        square.classList.add('square');
+                        square.classList.add((row + col) % 2 === 0 ? 'light' : 'dark');
+                        square.dataset.row = row;
+                        square.dataset.col = col;
+                        
+                        const pieceCode = initialBoard[row][col];
+                        if(pieceCode) {
+                            const piece = document.createElement('span');
+                            piece.classList.add('piece');
+                            piece.textContent = pieces[pieceCode];
+                            piece.dataset.piece = pieceCode;
+                            square.appendChild(piece);
+                        }
+                        
+                        board.appendChild(square);
+                    }
+                }
+            }
+            
+            createBoard();
+
+            board.addEventListener('click', (e) => {
+                const square = e.target.closest('.square');
+                if (!square) return;
+
+                if (selectedSquare) {
+                    // Mover peça
+                    if (square !== selectedSquare && selectedSquare.hasChildNodes()) {
+                        square.innerHTML = selectedSquare.innerHTML;
+                        selectedSquare.innerHTML = '';
+                    }
+                    // Desselecionar
+                    selectedSquare.classList.remove('selected');
+                    selectedSquare = null;
+                } else if (square.hasChildNodes()) {
+                    // Selecionar peça
+                    selectedSquare = square;
+                    selectedSquare.classList.add('selected');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
