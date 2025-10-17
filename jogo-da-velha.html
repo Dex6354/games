@@ -39,11 +39,9 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
+            flex-wrap: wrap;
         }
-        .header h1 {
-            margin: 0;
-            font-size: 1.5em;
-        }
+        .header h1 { margin: 0; font-size: 1.5em; }
         .header nav a {
             color: var(--text-color);
             text-decoration: none;
@@ -67,15 +65,22 @@
             background-color: var(--secondary-color);
             padding: 10px;
             border-radius: var(--border-radius);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             word-wrap: break-word;
         }
-        .room-info p { margin: 5px 0; }
-        .room-info code {
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding: 10px;
             background-color: var(--bg-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: var(--o-color);
+            border-radius: var(--border-radius);
+        }
+        .status {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            height: 20px;
         }
         .board {
             display: grid;
@@ -83,7 +88,7 @@
             gap: 10px;
             width: 300px;
             height: 300px;
-            margin: 20px auto;
+            margin: 0 auto;
             max-width: 80vw;
             max-height: 80vw;
         }
@@ -98,14 +103,17 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
-        .cell:hover {
-            background-color: #555;
-        }
+        .cell:hover { background-color: #555; }
         .cell.x { color: var(--x-color); }
         .cell.o { color: var(--o-color); }
-        .controls { margin-top: 20px; }
-        .back-btn {
-            background-color: var(--accent-color);
+        
+        .controls { 
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        .btn {
             color: white;
             border: none;
             padding: 10px 20px;
@@ -115,9 +123,10 @@
             text-decoration: none;
             transition: background-color 0.3s;
         }
-        .back-btn:hover {
-            background-color: var(--accent-hover);
-        }
+        .restart-btn { background-color: #28a745; }
+        .restart-btn:hover { background-color: #218838; }
+        .back-btn { background-color: var(--accent-color); }
+        .back-btn:hover { background-color: var(--accent-hover); }
     </style>
 </head>
 <body>
@@ -127,21 +136,23 @@
         <nav>
             <a href="index.html">Início</a>
             <a href="#" class="active">Jogo da Velha</a>
-            <a href="#" onclick="alert('Funcionalidade não implementada')">Damas</a>
-            <a href="#" onclick="alert('Funcionalidade não implementada')">Xadrez</a>
         </nav>
     </header>
 
     <div class="container">
         <h2>Jogo da Velha</h2>
-        <div class="room-info" id="room-info">
-            <p>Carregando informações da sala...</p>
+        <div class="room-info" id="room-info"></div>
+        <div class="scoreboard">
+            <div>Jogador X: <span id="score-x">0</span></div>
+            <div>Jogador O: <span id="score-o">0</span></div>
         </div>
+        <div class="status" id="status">Vez do Jogador X</div>
         
         <div class="board" id="board"></div>
         
         <div class="controls">
-            <a href="index.html" class="back-btn">Voltar à Página Inicial</a>
+            <button id="restart-btn" class="btn restart-btn">Nova Partida</button>
+            <a href="index.html" class="btn back-btn">Voltar à Página Inicial</a>
         </div>
     </div>
 
@@ -149,45 +160,107 @@
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const sala = urlParams.get('sala');
-            const nome = urlParams.get('nome');
+            const nome = urlParams.get('nome') || 'Jogador 1';
 
             const roomInfoDiv = document.getElementById('room-info');
-            if (sala && nome) {
-                roomInfoDiv.innerHTML = `
-                    <p>Bem-vindo, <strong>${nome}</strong>!</p>
-                    <p>ID da Sala: <code>${sala}</code></p>
-                    <p>Compartilhe esta URL para que seu amigo possa entrar.</p>
-                `;
-            } else {
-                roomInfoDiv.innerHTML = '<p>Erro: ID da sala ou nome não encontrado. Crie uma nova sala na página inicial.</p>';
-            }
+            roomInfoDiv.innerHTML = `
+                <p>Bem-vindo, <strong>${nome}</strong>! Sala: <code>${sala}</code></p>
+                <p>Compartilhe a URL para seu amigo jogar.</p>
+            `;
 
             const board = document.getElementById('board');
+            const statusDiv = document.getElementById('status');
+            const scoreXSpan = document.getElementById('score-x');
+            const scoreOSpan = document.getElementById('score-o');
+            const restartBtn = document.getElementById('restart-btn');
+            
             let currentPlayer = 'X';
             let gameActive = true;
-            const cells = [];
+            let boardState = ['', '', '', '', '', '', '', '', ''];
+            let scores = { X: 0, O: 0 };
+            
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
 
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                cell.dataset.index = i;
-                cell.addEventListener('click', handleCellClick);
-                board.appendChild(cell);
-                cells.push(cell);
+            function createBoard() {
+                for (let i = 0; i < 9; i++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.index = i;
+                    cell.addEventListener('click', handleCellClick);
+                    board.appendChild(cell);
+                }
             }
 
             function handleCellClick(event) {
                 const clickedCell = event.target;
-                if (clickedCell.textContent !== '' || !gameActive) {
+                const index = clickedCell.dataset.index;
+
+                if (boardState[index] !== '' || !gameActive) {
                     return;
                 }
 
+                boardState[index] = currentPlayer;
                 clickedCell.textContent = currentPlayer;
                 clickedCell.classList.add(currentPlayer.toLowerCase());
                 
-                // Simples troca de turno local
-                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                checkResult();
             }
+
+            function checkResult() {
+                let roundWon = false;
+                for (let i = 0; i < winConditions.length; i++) {
+                    const condition = winConditions[i];
+                    const a = boardState[condition[0]];
+                    const b = boardState[condition[1]];
+                    const c = boardState[condition[2]];
+                    if (a === '' || b === '' || c === '') continue;
+                    if (a === b && b === c) {
+                        roundWon = true;
+                        break;
+                    }
+                }
+
+                if (roundWon) {
+                    statusDiv.textContent = `Parabéns! Jogador ${currentPlayer} venceu!`;
+                    scores[currentPlayer]++;
+                    updateScoreboard();
+                    gameActive = false;
+                    return;
+                }
+
+                if (!boardState.includes('')) {
+                    statusDiv.textContent = 'Deu velha! Empate!';
+                    gameActive = false;
+                    return;
+                }
+
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                statusDiv.textContent = `Vez do Jogador ${currentPlayer}`;
+            }
+            
+            function updateScoreboard() {
+                scoreXSpan.textContent = scores.X;
+                scoreOSpan.textContent = scores.O;
+            }
+
+            function restartGame() {
+                gameActive = true;
+                currentPlayer = 'X';
+                boardState = ['', '', '', '', '', '', '', '', ''];
+                statusDiv.textContent = `Vez do Jogador ${currentPlayer}`;
+                document.querySelectorAll('.cell').forEach(cell => {
+                    cell.textContent = '';
+                    cell.classList.remove('x', 'o');
+                });
+            }
+
+            restartBtn.addEventListener('click', restartGame);
+            
+            createBoard();
         });
     </script>
 </body>
