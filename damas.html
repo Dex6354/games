@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Damas - Jogos Online</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --primary-color: #2c2c2c;
+            --secondary-color: #444;
+            --text-color: #f0f0f0;
+            --accent-color: #007bff;
+            --accent-hover: #0056b3;
+            --light-square: #f0d9b5;
+            --dark-square: #b58863;
+            --border-radius: 8px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding-top: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 80px);
+            text-align: center;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--primary-color);
+            padding: 15px 0;
+            border-bottom: 2px solid var(--secondary-color);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .header h1 { margin: 0; font-size: 1.5em; }
+        .header nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin: 0 10px;
+            padding: 8px 12px;
+            border-radius: var(--border-radius);
+            transition: background-color 0.3s;
+        }
+        .header nav a.active, .header nav a:hover {
+            background-color: var(--accent-color);
+        }
+        .container {
+            background-color: var(--primary-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 95%;
+        }
+        .room-info {
+            background-color: var(--secondary-color);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            word-wrap: break-word;
+        }
+        .room-info p { margin: 5px 0; }
+        .room-info code {
+            background-color: var(--bg-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ffc107;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1;
+            margin: 20px auto;
+            border: 5px solid var(--dark-square);
+        }
+        .square {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .square.light { background-color: var(--light-square); }
+        .square.dark { background-color: var(--dark-square); }
+        .piece {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .piece:hover { transform: scale(1.1); }
+        .piece.white { background-color: #f8f8f8; border: 2px solid #ccc; }
+        .piece.black { background-color: #333; border: 2px solid #555; }
+        .square.selected { background-color: #6a994e; }
+        
+        .controls { margin-top: 20px; }
+        .back-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .back-btn:hover { background-color: var(--accent-hover); }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>Jogos Online</h1>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="#" onclick="alert('Funcionalidade não implementada')">Jogo da Velha</a>
+            <a href="#" class="active">Damas</a>
+            <a href="#" onclick="alert('Funcionalidade não implementada')">Xadrez</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2>Damas</h2>
+        <div class="room-info" id="room-info"></div>
+        <div class="board" id="board"></div>
+        <div class="controls">
+            <a href="index.html" class="back-btn">Voltar à Página Inicial</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sala = urlParams.get('sala');
+            const nome = urlParams.get('nome');
+
+            const roomInfoDiv = document.getElementById('room-info');
+            if (sala && nome) {
+                roomInfoDiv.innerHTML = `
+                    <p>Bem-vindo, <strong>${nome}</strong>!</p>
+                    <p>ID da Sala: <code>${sala}</code></p>
+                    <p>Compartilhe o link para seu amigo entrar na sala.</p>
+                `;
+            } else {
+                roomInfoDiv.innerHTML = '<p>Erro: Informações da sala não encontradas.</p>';
+            }
+
+            const board = document.getElementById('board');
+            let selectedPiece = null;
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.classList.add('square');
+                    square.classList.add((row + col) % 2 === 0 ? 'light' : 'dark');
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+
+                    if ((row + col) % 2 !== 0) {
+                        if (row < 3) {
+                            square.innerHTML = '<div class="piece black"></div>';
+                        } else if (row > 4) {
+                            square.innerHTML = '<div class="piece white"></div>';
+                        }
+                    }
+                    board.appendChild(square);
+                }
+            }
+
+            board.addEventListener('click', (e) => {
+                const target = e.target;
+                const square = target.closest('.square');
+                
+                if (selectedPiece) {
+                    // Mover peça para um quadrado vazio
+                    if (square && !square.hasChildNodes()) {
+                       square.appendChild(selectedPiece);
+                    }
+                    // Desselecionar
+                    selectedPiece.parentElement.classList.remove('selected');
+                    selectedPiece = null;
+                } else if (target.classList.contains('piece')) {
+                    // Selecionar peça
+                    selectedPiece = target;
+                    target.parentElement.classList.add('selected');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
